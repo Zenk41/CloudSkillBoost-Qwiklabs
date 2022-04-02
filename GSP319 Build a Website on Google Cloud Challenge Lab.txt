@@ -1,0 +1,70 @@
+Task 1
+gcloud services enable cloudbuild.googleapis.com
+
+gcloud builds submit --tag gcr.io/${GOOGLE_CLOUD_PROJECT}/fancy-monolith-768:1.0.0 .
+
+Task 2
+gcloud config set compute/zone us-central1-a
+
+gcloud services enable container.googleapis.com
+
+gcloud container clusters create fancy-prod-325 --num-nodes 3
+
+kubectl create deployment fancy-monolith-768 --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/fancy-monolith-768:1.0.0
+
+kubectl expose deployment fancy-monolith-768 --type=LoadBalancer --port 80 --target-port 8080
+
+Task 3
+cd ~/monolith-to-microservices/microservices/src/orders
+
+gcloud builds submit --tag gcr.io/${GOOGLE_CLOUD_PROJECT}/fancy-orders-762:1.0.0 .
+
+cd ~/monolith-to-microservices/microservices/src/products
+
+gcloud builds submit --tag gcr.io/${GOOGLE_CLOUD_PROJECT}/fancy-products-840:1.0.0 .
+
+
+Task 4
+kubectl create deployment fancy-orders-762 --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/fancy-orders-762:1.0.0
+
+kubectl expose deployment fancy-orders-762 --type=LoadBalancer --port 80 --target-port 8081
+
+kubectl create deployment fancy-products-840 --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/fancy-products-840:1.0.0
+
+kubectl expose deployment fancy-products-840 --type=LoadBalancer --port 80 --target-port 8082
+
+
+kubectl get service products
+
+
+kubectl get service
+NAME                 TYPE           CLUSTER-IP     EXTERNAL-IP      PORT(S)        AGE
+fancy-monolith-768   LoadBalancer   10.76.5.185    34.71.176.51     80:30057/TCP   19m
+fancy-orders-762     LoadBalancer   10.76.15.123   146.148.44.8     80:30912/TCP   13m
+fancy-prod-325       LoadBalancer   10.76.0.45     34.133.131.168   80:30264/TCP   13m
+fancy-products-840   LoadBalancer   10.76.6.251    34.135.64.85     80:31902/TCP   6m26s
+kubernetes           ClusterIP      10.76.0.1      <none>           443/TCP        22m
+
+Task 5
+
+cd ~/monolith-to-microservices/react-app
+
+nano .env
+
+Task 6
+
+
+cd ~/monolith-to-microservices/microservices/src/frontend
+
+gcloud builds submit --tag gcr.io/${GOOGLE_CLOUD_PROJECT}/fancy-frontend-863:1.0.0 .
+
+task 7
+
+kubectl create deployment fancy-frontend-863 --image=gcr.io/${GOOGLE_CLOUD_PROJECT}/fancy-frontend-863:1.0.0
+
+
+
+kubectl expose deployment fancy-frontend-863 --type=LoadBalancer --port 80 --target-port 8080
+
+
+
