@@ -1,0 +1,81 @@
+Task 1: Create the production environment
+gcloud config set compute/zone us-east1-b
+Compute Engine > jumpshot instances > SSH
+cd /work/dm
+ls
+
+nano prod-network.yaml
+change the region into us-east1
+OR
+sed -i s/SET_REGION/us-east1/g prod-network.yaml
+
+gcloud deployment-manager deployments create prod-network --config=prod-network.yaml
+gcloud container clusters create kraken-production-718 \
+--num-nodes 2 \
+--network kraken-prod-vpc \
+--subnetwork kraken-prod-subnet \
+--zone us-east1-b
+
+gcloud container clusters get-credentials kraken-prod
+
+cd /work/k8s
+
+kubectl create -f deployment-prod-backend.yaml
+kubectl create -f deployment-prod-frontend.yaml
+kubectl get pods
+kubectl create -f service-prod-backend.yaml
+kubectl create -f service-prod-frontend.yaml
+kubectl get services
+OR
+for F in $(ls *.yaml); do kubectl create -f $F; done
+kubectl get services
+
+Task 2: Setup the Admin instance
+gcloud compute instances create kraken-admin-620 \
+--network-interface="subnet=kraken-mgmt-subnet" \
+--network-interface="subnet=kraken-prod-subnet"
+
+Nav > Monitoring > Alerting > Create Policy
+Add Condition
+
+Resource Type : GCE VM Instance
+Metric : CPU Utilization compute.googleapis.com/instance/cpu/utilization
+Filter : Choose instance id and paste the value copied from kraken-admin-620 (5505635777237097785)
+Threshold : 80 for 1 minute
+ADD
+
+Next
+Notofication Channel > Manage Noticication Channels
+Email > Add New
+Insert email and Display Name
+Back to Notification CHannel 
+Select the Email
+Next and input the Topics 
+SAVE
+
+Task 3: Verify the Spinnaker deployment
+Nav > Kubernetes Engine > ServiceS & Ingress > Select spin-deck > Scroll to Ports > Click Port Forwading
+OR
+DECK_POD=$(kubectl get pods --namespace default -l "cluster=spin-deck" -o jsonpath="{.items[0].metadata.name}")
+kubectl port-forward --namespace default $DECK_POD 8080:9000 >> /dev/null &
+
+Web Preview on port 8080
+
+Nav > resource repository Clone > Clone > Google Cloud SDK > Paste and Run in Shell
+OR
+gcloud source repos clone sample-app
+
+cd sample-app
+git config --global user.email "$(gcloud config get-value core/account)"
+git config --global user.name "$(gcloud config get-value core/account)"
+sed -i 's/orange/green/g' cmd/gke-info/common-service.go
+git commit -a -m "Change color to green"
+git tag v1.0.1
+git push --tags
+OR
+git config --global user.email "$(gcloud config get-value core/account)" git config --global user.name "gcloud config get-value core/account" sed -i 's/orange/green/g' cmd/gke-info/common-service.go git commit -a -m "Change Color to green" git tag v1.0.1 git push --tags
+
+gcloud container clusters get-credentials spinnaker-tutorial
+
+
+
