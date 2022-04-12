@@ -1,0 +1,50 @@
+Task 1: Configure Cloud Monitoring
+Navigate > Monitoring > Dashboard 
+Check the Media_Dashboard
+
+Task 2: Configure a Compute Instance to generate Custom Cloud Monitoring metrics
+Navigate > Compute Engine > Click Checkbox for video-queue-monitor > Stop the instances 
+Click video-queue-monitor > Edit
+
+On the Custom metadata
+Replace the Project id in 
+Replace the instances id
+Replace the instances zone
+Save.
+
+Click Checkbox for video-queue-monitor
+Start.
+
+Task 3: Create a custom metric using Cloud Operations logging events
+Navigate > Logging > at Query Enter : textPayload=~"file_format\: ([4,8]K).*"
+Run Query > Create Metric
+Metric Name : big_video_upload_rate
+leave all the setting 
+CREATE METRIC
+
+Task 4: Add custom metrics to the Media Dashboard in Cloud Operations Monitoring
+Navigate > Monitoring > Dashboard
+Add Chart > 
+Metric: custom.googleapis.com/opencensus/my.videoservice.org/measure/input_queue_size
+filter: instances_id = [instance id:example :6675213564451024984]
+SAVE
+Add Chart >
+Metric : logging/user/big_video_upload_rate
+SAVE
+
+Task 5: Create a Cloud Operations alert based on the rate of high resolution video file uploads
+Navigate > Monitoring > Alert
+Create Policy
+Metric: logging/user/big_video_upload_rate
+Threshold 4
+For: 1 minute
+Name Alert : high resolution video file uploads
+Save
+
+
+
+
+
+
+
+
