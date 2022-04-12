@@ -1,0 +1,102 @@
+GSP322 | Build and Secure Networks in Google Cloud: Challenge Lab
+
+1. Check the firewall rules. Remove the overly permissive rules.
+Navigation > Firewalll > Click the Checkbox for open-acces > DELETE
+OR
+gcloud compute firewall-rules delete open-access
+
+
+2. Navigate to Compute Engine in the Cloud Console and identify the bastion host. The instance should be stopped. Start the instance.
+Navigation > compute engine > Click the Checkbox for bastion instances then klik start
+OR
+gcloud compute instances start bastion --zone=us-central1-b
+
+3. The bastion host is the one machine authorized to receive external SSH traffic. Create a firewall rule that allows SSH (tcp/22) from the IAP service. The firewall rule must be enabled for the bastion host instance using a network tag of permit-ssh-iap-ingress-ql-170 .
+
+Navigate > VPC > Firewall > Create Firewall Rule 
+name : allow-ingress-from-iap
+network : acme-vpc
+tag : permit-ssh-iap-ingress-ql-170
+ranges : 35.235.240.0/20
+protocol : check tcp with 22
+OR 
+gcloud compute firewall-rules create allow-ingress-from-iap \
+--allow=tcp:22 \
+--source-ranges 35.235.240.0/20 \
+--target-tags permit-ssh-iap-ingress-ql-170 \
+--network acme-vpc
+
+Then update the bastion host instace to enable firewall via network tag :
+gcloud compute instances add-tags bastion \
+--tags=permit-ssh-iap-ingress-ql-170 \
+--zone=us-central1-b
+OR
+Navigate > Compute Engine > Click Bastion Instances > Edit
+Update the Network tags into permit-ssh-iap-ingress-ql-170
+SAVE.
+
+4. The juice-shop server serves HTTP traffic. Create a firewall rule that allows traffic on HTTP (tcp/80) to any address. The firewall rule must be enabled for the juice-shop instance using a network tag of permit-http-ingress-ql-444 .
+
+Navigate > VPC > Firewall > Create Firewall Rule 
+name : allow-http-ingress
+network : acme-vpc
+tag : permit-http-ingress-ql-444
+ranges : 0.0.0.0/0
+protocol : check tcp with 80
+OR 
+gcloud compute firewall-rules create allow-http-ingress \
+--allow=tcp:80 \
+--source-ranges 0.0.0.0/0 \
+--target-tags permit-http-ingress-ql-444 \
+--network acme-vpc
+
+Then update the juice-shop host instace to enable firewall via network tag :
+gcloud compute instances add-tags juice-shop \
+--tags=permit-http-ingress-ql-444 \
+--zone=us-central1-b
+OR
+Navigate > Compute Engine > Click Bastion Instances > Edit
+Update the Network tags into permit-http-ingress-ql-444
+SAVE.
+
+
+5. You need to connect to juice-shop from the bastion using SSH. Create a firewall rule that allows traffic on SSH (tcp/22) from acme-mgmt-subnet network address. The firewall rule must be enabled for the juice-shop instance using a network tag of permit-ssh-internal-ingress-ql-623 .
+
+Navigate > VPC > Firewall > Create Firewall Rule 
+name : allow-internal-ssh-ingress
+network : acme-vpc
+tag : permit-ssh-internal-ingress-ql-623
+ranges : 0.0.0.0/0
+protocol : check tcp with 22
+OR 
+gcloud compute firewall-rules create allow-internal-ssh-ingress \
+--allow=tcp:22 \
+--source-ranges 192.168.10.0/24 \
+--target-tags permit-ssh-internal-ingress-ql-623 \
+--network acme-mgmt-subnet
+
+Then update the juice-shop host instace to enable firewall via network tag :
+gcloud compute instances add-tags juice-shop \
+--tags=permit-ssh-internal-ingress-ql-623 \
+--zone=us-central1-b
+OR
+Navigate > Compute Engine > Click Bastion Instances > Edit
+Update the Network tags into permit-ssh-internal-ingress-ql-623
+SAVE.
+
+6. In the Compute Engine instances page, click the SSH button for the bastion host. Once connected, SSH to juice-shop.
+Navigation > Compute Engine > VM Instances > Click SSH for bastion and juice-shop
+or
+
+gcloud compute ssh bastion zone=us-central1-b
+Open a new tab for Cloud Shell Terminal
+gcloud compute ssh juice-shop zone=us-central1-b
+
+gcloud compute instances list
+
+NAME        ZONE           MACHINE_TYPE   PREEMPTIBLE  INTERNAL_IP   EXTERNAL_IP    STATUS
+bastion     us-central1-b  n1-standard-1               192.168.10.2                 RUNNING
+juice-shop  us-central1-b  n1-standard-1               192.168.11.2  34.70.113.205  RUNNING
+
+for bastion ssh write ssh [juice-shop internal ip] : ssh 192.168.11.2
+for juice-shop ssh write ssh [bastion internal ip] : ssh 192.168.10.2
