@@ -1,0 +1,34 @@
+Deploy a Compute Instance with a Remote Startup Script
+
+Download Sample Startup Script : https://www.cloudskillsboost.google/instructions/2786800/download
+
+1#Confirm that a Google Cloud Storage bucket exists that contains a file
+
+Nav > Storage Bucket > Create Bucket > 
+name : qwiklabs-gcp-02-3c8c0dd9f5b6
+Acces Control > Fine-grained
+
+Upload File > resources-install-web.sh
+resources-install-web.sh > Triple Dot > Edit Acces
+
+ADD ENTRY >
+Utilty : Public
+Name : allUsers
+Acces : Reader
+
+
+2#Confirm that a compute instance has been created that has a remote startup script called install-web.sh configured
+
+Nav > Compute Engine > VM Instances > 
+Select lab-monitor
+Stop > Edit
+add Metadata 
+Key : startup-script-url
+Value : https://storage.googleapis.com/qwiklabs-gcp-02-3c8c0dd9f5b6/resources-install-web.sh
+
+3#Confirm that a HTTP access firewall rule exists with tag that applies to that virtual machine
+Allow HTTP
+Save
+
+4#Connect to the server ip-address using HTTP and get a non-error response
+Check the connection using HTTP by clicking the External IP 
