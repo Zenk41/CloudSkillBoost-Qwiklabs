@@ -1,0 +1,27 @@
+1# Create a Compute Engine instance, add necessary firewall rules.
+Naviagtion > Compute Engine > VM Instances > Create Instances
+Name : prd-fin-477
+Zone : us-central1-c
+Series : N1
+Boot Disk : Linux 9 (stretch)
+Tick : Allow HTTP Traffic
+       Allow HTTPS Traffic
+
+OR
+gcloud compute instances create prd-fin-477 \
+--zone=us-central1-c \
+--machine-type=n1-standard-1 \
+--tags=http-server,https-server \
+--image=projects/debian-cloud/global/images/debian-9-stretch-v20220406
+
+2# Configure Apache2 Web Server in your instance
+sudo su -
+apt-get update
+apt-get install apache2 -y
+service --status-all
+
+3# Test your server
+Navigation > Compute Engine > VM Instances 
+Copy the Public/External IP
+use HTTP to acces 
+http://146.148.65.23
